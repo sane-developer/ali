@@ -1,5 +1,16 @@
 #!/bin/bash
 
+aliases=(
+    'ls="LC_COLLATE=C ls -la --color=auto --group-directories-first"'
+    'agu="sudo apt-get update && sudo apt-get upgrade"'
+    'agi="sudo apt-get install -y"'
+    'gch="git checkout -B"'
+    'gc="git add --all && git commit -am"'
+    'ga="git commit --amend -C HEAD"'
+    'gd="git diff --color-words"'
+    'gr="git reset HEAD~1 --mixed"'
+)
+
 packages=(
     'man'
     'man-db'
@@ -41,7 +52,7 @@ function is_package_installed()
     sudo apt list --installed | grep -q "^$1/"
 }
 
-function get_packages()
+function setup_packages()
 {
     if silently_update_packages; then
         echo "Successfully updated existing packages"
@@ -71,9 +82,23 @@ function get_packages()
     done
 }
 
+function setup_aliases()
+{
+    path="$HOME/.bash_aliases"
+
+    if [ ! -f "$path" ]; then
+        touch "$path"
+    fi
+
+    for custom_alias in "${aliases[@]}"; do
+        echo "alias $custom_alias" >> "$path"
+    done
+}
+
 function main()
 {
-    get_packages
+    setup_packages
+    setup_aliases
 }
 
 main
