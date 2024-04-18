@@ -60,7 +60,7 @@ function main() {
 
     for package in "${packages[@]}"; do
         silently_install_package "$package"
-    end
+    done
 }
 
 main
