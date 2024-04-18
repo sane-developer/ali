@@ -11,7 +11,6 @@ packages=(
     'wget'
     'git'
     'ssh'
-    'ssh-keygen'
     'gcc'
     'g++'
     'gdb'
@@ -22,45 +21,59 @@ packages=(
     'python3-venv'
 )
 
-function silently_update_existing_packages() {
-    sudo apt-get update -y > /dev/null 2>&1
+function silently_update_packages() 
+{
+    sudo apt-get update > /dev/null 2>&1
+}
 
-    if [ $? -eq 0 ]; then
+function silently_upgrade_packages()
+{
+    sudo apt-get upgrade -y > /dev/null 2>&1
+}
+
+function silently_install_package()
+{
+    sudo apt-get install -q -y "$1" > /dev/null 2>&1
+}
+
+function is_package_installed()
+{
+    sudo apt list --installed | grep -q "^$1/"
+}
+
+function get_packages()
+{
+    if silently_update_packages; then
         echo "Successfully updated existing packages"
     else
         echo "Failed at updating exisiting packages"
         exit 1
     fi
 
-    sudo apt-get upgrade -y > /dev/null 2>&1
-
-    if [ $? -eq 0 ]; then
+    if silently_upgrade_packages; then
         echo "Successfully upgraded existing packages"
     else
         echo "Failed at upgraded exisiting packages"
         exit 1
     fi
-}
 
-function silently_install_package() {
-    package="$1"
-    
-    sudo apt-get install -q -y "$package" > /dev/null 2>&1
+    for package in "${packages[@]}"; 
+    do
+        if is_package_installed "$package"; then
+            echo "Package has been already installed: $package" && continue
+        fi
 
-    if [ $? -eq 0 ]; then
-        echo "Successfully installed package: $package"
-    else
-        echo "Failed at installing package: $package"
-        exit 1
-    fi
-}
-
-function main() {
-    silently_update_existing_packages
-
-    for package in "${packages[@]}"; do
-        silently_install_package "$package"
+        if silently_install_package "$package"; then
+            echo "Successfully installed package: $package"
+        else
+            echo "Failed at installing package: $package"
+        fi
     done
+}
+
+function main()
+{
+    get_packages
 }
 
 main
